@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name="theme-color" content="#000000"><link rel="manifest" href="/manifest.json"><link rel="shortcut icon" href="/favicon.ico"><title>React App</title><link href="/static/css/main.22f29b2d.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div><script>window.HorizontalPan = function(anim, config) {
+      config = config || {};
+      return {
+        onMouseDown: function(event) {
+          anim.stopAnimation(startValue => {
+            config.onStart && config.onStart();
+            var startPosition = event.clientX;
+            var lastTime = Date.now();
+            var lastPosition = event.clientX;
+            var velocity = 0;
+            function updateVelocity(event) {
+              var now = Date.now();
+              if (event.clientX === lastPosition || now === lastTime) {
+                return;
+              }
+              velocity = (event.clientX - lastPosition) / (now - lastTime);
+              lastTime = now;
+              lastPosition = event.clientX;
+            }
+            var moveListener, upListener;
+            window.addEventListener('mousemove', moveListener = (event) => {
+              var value = startValue + (event.clientX - startPosition);
+              anim.setValue(value);
+              updateVelocity(event);
+            });
+            window.addEventListener('mouseup', upListener = (event) => {
+              updateVelocity(event);
+              window.removeEventListener('mousemove', moveListener);
+              window.removeEventListener('mouseup', upListener);
+              config.onEnd && config.onEnd({velocity});
+            });
+          });
+        }
+      }
+    };</script><script type="text/javascript" src="/static/js/main.b17a8e00.js"></script></body></html>

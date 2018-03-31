@@ -1,0 +1,41 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+#root {
+    height: 100%;
+}
+
+.planBox {
+    width: 1600px;
+    height: 800px;
+    display: flex;
+    align-items: stretch;
+    border:solid 1px;
+}
+.plan-form{
+  width: 700px;
+  border-right: solid 1px;
+  padding: 10px;
+}
+.plan-form>div{
+  margin-top:15px;
+}
+label{
+  width:100px;
+}
+table {
+    border: solid 1px;
+}
+thead{
+  font-weight: bold;
+  background: #DDD;
+  text-align: center;
+}
+td {
+    border: solid 1px;
+    width: 20px;
+    height: 10px;
+}
