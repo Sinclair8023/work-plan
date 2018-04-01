@@ -9,7 +9,7 @@ import moment from 'moment'
 import ReactEcharts from 'echarts-for-react'
 import Flex from './components/Flex'
 import { store } from './utils'
-import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal } from 'antd'
+import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider } from 'antd'
 const RadioGroup = Radio.Group
 const InputGroup = Input.Group
 const TextArea = Input.TextArea
@@ -45,7 +45,7 @@ class Plan extends React.Component {
       unit: 0.2,
       noSatDay: true,
       noSunDay: true,
-      allMembers,
+      allMembers: this.allMembers.join('，'),
       visible: false
     }
   }
@@ -224,22 +224,23 @@ class Plan extends React.Component {
   }
   // 渲染表单
   renderForm = () => {
-    const disabledHours = [1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 23, 23, 24, 0]
+    const disabledHours = [1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 23, 24, 0]
     const members = Mention.getMentions(this.state.members).map(v => v.replace('@', ''))
     const { title, unit, start, noSatDay, noSunDay } = this.state
     return (
       <Flex dir="column" align="stretch">
-        <Flex dir="column" align="stretch" style={{height: 'calc(100% - 50px)'}}  className="plan-form">
-          <h1>排期表单</h1>
+        <Flex dir="column" align="stretch" style={{ height: 'calc(100% - 50px)' }} className="plan-form">
+          <Divider><h1>排期表单</h1></Divider>
           <h3>说明：</h3>
           <ul>
-            <li>关于排期成员：输入’@+姓名‘增加成员,输入空格结束。输入’@‘会有提示</li>
-            <li>关于排期刻度：以’工作日‘为单位，最小0.1工作日，最大1工作日</li>
-            <li>关于过滤周六：开启后，排期时间自动跨过周六</li>
-            <li>关于过滤周日：开启后，排期时间自动跨过周日</li>
-            <li>关于开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
-            <li>关于排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
-            <li>其他：点击复制表格可以复制表格到剪贴板。</li>
+            <li>排期成员：输入’@+姓名‘增加成员,输入空格结束。输入’@‘会有提示，提示信息可以通过维护所有成员维护</li>
+            <li>排期刻度：以’工作日‘为单位，最小0.1工作日，最大1工作日</li>
+            <li>过滤周六：开启后，排期时间自动跨过周六</li>
+            <li>过滤周日：开启后，排期时间自动跨过周日</li>
+            <li>开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
+            <li>排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
+            <li>复制表格 ：点击复制表格可以复制表格到剪贴板。</li>
+            <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员。</li>
           </ul>
           <Flex>
             <label htmlFor="">排期内容</label>
@@ -279,7 +280,7 @@ class Plan extends React.Component {
             {
               members.map((p, i) => (
                 <TabPane tab={p} key={i}>
-                  <Flex dir="column" align="stretch" height={400} style={{overflowY: 'auto'}}>
+                  <Flex dir="column" align="stretch" height={400} style={{ overflowY: 'auto' }}>
                     <Flex align="center" height={50}>
                       {p}同学排期开始于
                     <DatePicker
@@ -323,7 +324,7 @@ class Plan extends React.Component {
             }
           </Tabs>
         </Flex>
-        <Flex style={{height: 50}} justify="center">
+        <Flex style={{ height: 50 }} justify="center">
           <Button.Group>
             <Button icon="copy" type="primary" onClick={() => this.onCopy()}>复制表格</Button>
             <Button icon="edit" type="primary" onClick={() => this.onSimpleChange('visible')('true')}>维护所有成员</Button>
@@ -430,20 +431,24 @@ class Plan extends React.Component {
           this.renderForm()
         }
         <div className="plan-table">
-          <div style={{height: 500, overflowY: 'scroll'}}>
+          <div style={{ height: 500, overflowY: 'scroll' }}>
+          <Divider><h1>表格</h1></Divider>
             {this.renderTable()}
           </div>
-          {
-            Object.keys(this.state.mission).length && (
-              <ReactEcharts
-                option={this.getOption()}
-                notMerge={true}
-                lazyUpdate={true}
-                theme={"theme_name"}
-                className="plan-chart"
-              />
-            )
-          }
+          <div>
+          <Divider><h1>排期分析</h1></Divider>
+            {
+              Object.keys(this.state.mission).length && (
+                <ReactEcharts
+                  option={this.getOption()}
+                  notMerge={true}
+                  lazyUpdate={true}
+                  theme={"theme_name"}
+                  className="plan-chart"
+                />
+              )
+            }
+          </div>
         </div>
       </div>
     )
