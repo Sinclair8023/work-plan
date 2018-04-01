@@ -4,7 +4,7 @@
  * mission 任务 {desc,time,person}
  * start
  */
-import React from 'react'
+import React, { Fragment } from 'react'
 import moment from 'moment'
 import ReactEcharts from 'echarts-for-react'
 import Flex from './components/Flex'
@@ -46,7 +46,8 @@ class Plan extends React.Component {
       noSatDay: true,
       noSunDay: true,
       allMembers: this.allMembers.join('，'),
-      visible: false
+      visible: false,
+      docShow: true,
     }
   }
   // 合计时间
@@ -226,21 +227,27 @@ class Plan extends React.Component {
   renderForm = () => {
     const disabledHours = [1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 23, 24, 0]
     const members = Mention.getMentions(this.state.members).map(v => v.replace('@', ''))
-    const { title, unit, start, noSatDay, noSunDay } = this.state
+    const { title, unit, start, noSatDay, noSunDay, docShow } = this.state
     return (
       <Flex dir="column" align="stretch">
         <Flex dir="column" align="stretch" style={{ height: 'calc(100% - 50px)' }} className="plan-form">
           <Divider><h1>排期表单</h1></Divider>
-          <h3>说明：</h3>
+          <h3>说明：<Button onClick={() => this.setState({ docShow: !docShow })} icon="double-right" style={{ transform: `rotate(${docShow ? -90 : 90}deg)` }} /></h3>
           <ul>
             <li>排期成员：输入’@+姓名‘增加成员,输入空格结束。输入’@‘会有提示，提示信息可以通过维护所有成员维护</li>
-            <li>排期刻度：以’工作日‘为单位，最小0.1工作日，最大1工作日</li>
-            <li>过滤周六：开启后，排期时间自动跨过周六</li>
-            <li>过滤周日：开启后，排期时间自动跨过周日</li>
-            <li>开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
-            <li>排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
-            <li>复制表格 ：点击复制表格可以复制表格到剪贴板。</li>
-            <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员。</li>
+            {
+              docShow ? (
+                <Fragment>
+                  <li>排期刻度：以’工作日‘为单位，最小0.1工作日，最大1工作日</li>
+                  <li>过滤周六：开启后，排期时间自动跨过周六</li>
+                  <li>过滤周日：开启后，排期时间自动跨过周日</li>
+                  <li>开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
+                  <li>排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
+                  <li>复制表格 ：点击复制表格可以复制表格到剪贴板。</li>
+                  <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员。</li>
+                </Fragment>
+              ) : <li>......</li>
+            }
           </ul>
           <Flex>
             <label htmlFor="">排期内容</label>
@@ -432,11 +439,11 @@ class Plan extends React.Component {
         }
         <div className="plan-table">
           <div style={{ height: 500, overflowY: 'scroll' }}>
-          <Divider><h1>表格</h1></Divider>
+            <Divider><h1>表格</h1></Divider>
             {this.renderTable()}
           </div>
           <div>
-          <Divider><h1>排期分析</h1></Divider>
+            <Divider><h1>排期分析</h1></Divider>
             {
               Object.keys(this.state.mission).length && (
                 <ReactEcharts
