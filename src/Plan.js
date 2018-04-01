@@ -54,12 +54,15 @@ class Plan extends React.Component {
   getTime = () => {
     let { mission, start } = this.state
     let startTime = moment.min(Object.values(start))
-    let endTime = moment.max(Object.entries(mission).map(([p, ms]) => start[p].clone().add(ms.reduce((a, b) => a + b.time, 0), 'days')))
+    let timeArr = Object.entries(mission).map(([p, ms]) => start[p].clone().add(ms.reduce((a, b) => a + b.time, 0), 'days'))
+    let endTime = moment.max(timeArr)
     let sumDays = Math.ceil((endTime - startTime) / 1000 / 3600 / 24) + 1
+    let sumTimes = Object.entries(mission).map(([p, ms]) => ms.reduce((a, b) => a + b.time, 0)).reduce((a,b) => a+b, 0)
     return {
       sumDays,
       startTime,
-      endTime
+      endTime,
+      sumTimes
     }
   }
   renderRow = (p, m, index) => {
@@ -82,7 +85,7 @@ class Plan extends React.Component {
       <tr key={`${p}-${this.missionLength}`}>
         <td>{this.missionLength++}</td>
         <td>{m.desc}</td>
-        <td>{m.time}</td>
+        <td style={{textAlign:'center'}}>{m.time}</td>
         {
           timeTd.map((v, i) => <td key={i} style={{
             background: i >= beforeDays / unit && i < endTime / unit ? 'green' : 'white'
@@ -94,7 +97,7 @@ class Plan extends React.Component {
   }
   renderTable() {
     const { title, person, mission, start, unit } = this.state
-    let { sumDays, startTime } = this.getTime()
+    let { sumDays, startTime, sumTimes } = this.getTime()
     console.log('sumDays', sumDays)
     let timeTd = new Array(sumDays).fill(1)
     let index = 0
@@ -125,7 +128,7 @@ class Plan extends React.Component {
         <tfoot>
           <tr>
             <td colSpan={2}>合计</td>
-            <td>{sumDays}</td>
+            <td>{sumTimes}</td>
             <td colSpan={1 + timeTd.length / unit}>-</td>
           </tr>
         </tfoot>
