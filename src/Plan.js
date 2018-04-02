@@ -291,6 +291,7 @@ class Plan extends React.Component {
                       {p}同学排期开始于
                     <DatePicker
                         format="MM/DD HH"
+                        allowClear={false}
                         showTime={
                           {
                             disabledHours: () => disabledHours,
