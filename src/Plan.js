@@ -34,13 +34,12 @@ class Plan extends React.Component {
     this.allMembers = allMembers ? allMembers.split(',') : ALL_MAN
     return {
       title: '排期计划',
-      persons: ['xxx', 'yyy'],
-      members: toContentState('@吴小康'),
+      members: toContentState('@Sinclair'),
       mission: {
-        吴小康: [this.initMission()],
+        Sinclair: [this.initMission()],
       },
       start: {
-        吴小康: moment().set('hour', 8),
+        Sinclair: moment().set('hour', 8),
       },
       unit: 0.2,
       noSatDay: true,
@@ -98,11 +97,9 @@ class Plan extends React.Component {
   renderTable() {
     const { title, person, mission, start, unit } = this.state
     let { sumDays, startTime, sumTimes } = this.getTime()
-    console.log('sumDays', sumDays)
     let timeTd = new Array(sumDays).fill(1)
     let index = 0
     this.missionLength = 1
-    console.log(Mention.toString(this.state.members))
     return (
       <table ref={ref => this.table = ref}>
         <thead>
@@ -234,7 +231,7 @@ class Plan extends React.Component {
     return (
       <Flex dir="column" align="stretch">
         <Flex dir="column" align="stretch" style={{ height: 'calc(100% - 50px)' }} className="plan-form">
-          <Divider><h1>排期表单</h1></Divider>
+          <Divider><h1><a href="https://github.com/Sinclair8023/work-plan">排期表单</a></h1></Divider>
           <h3>说明：<Button onClick={() => this.setState({ docShow: !docShow })} icon="double-right" style={{ transform: `rotate(${docShow ? -90 : 90}deg)` }} /></h3>
           <ul>
             <li>排期成员：输入’@+姓名‘增加成员,输入空格结束。输入’@‘会有提示，提示信息可以通过维护所有成员维护</li>
@@ -247,7 +244,7 @@ class Plan extends React.Component {
                   <li>开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
                   <li>排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
                   <li>复制表格 ：点击复制表格可以复制表格到剪贴板。</li>
-                  <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员。</li>
+                  <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员（维护之后长期有效）。</li>
                 </Fragment>
               ) : <li>......</li>
             }
@@ -264,7 +261,6 @@ class Plan extends React.Component {
               value={this.state.members}
               onChange={this.onMembersChange}
             />
-            {/* <Input placeholder="多个责任人之间已逗号隔开" value={this.state.persons.join('，')} onChange={e => this.setState({ persons: e.target.value.split('，') })} /> */}
           </Flex>
           <Flex>
             <label htmlFor="">排期刻度（天）</label>
@@ -294,7 +290,6 @@ class Plan extends React.Component {
                     <Flex align="center" height={50}>
                       {p}同学排期开始于
                     <DatePicker
-                        allowClear
                         format="MM/DD HH"
                         showTime={
                           {
