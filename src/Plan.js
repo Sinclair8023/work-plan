@@ -9,12 +9,13 @@ import moment from 'moment'
 import ReactEcharts from 'echarts-for-react'
 import Flex from './components/Flex'
 import { store } from './utils'
-import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider } from 'antd'
+import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider, Select  } from 'antd'
 const RadioGroup = Radio.Group
 const InputGroup = Input.Group
 const TextArea = Input.TextArea
 const TabPane = Tabs.TabPane;
 const ButtonGroup = Button.Group
+const Option = Select.Option
 const { toContentState } = Mention;
 let ID = 0
 const getUUID = () => ID++
@@ -29,24 +30,39 @@ class Plan extends React.Component {
   initMission = () => ({
     desc: '', time: 1, key: getUUID()
   })
-  initState = () => {
+  initState = (data = {}) => {
     let allMembers = store.get('members')
-    this.allMembers = allMembers ? allMembers.split(',') : ALL_MAN
+    allMembers = allMembers ? allMembers.split(',') : ALL_MAN
+    let historyArchive = store.get('historyArchive')
+    historyArchive = historyArchive ? JSON.parse(historyArchive) : []
+    let members = data.members
+    delete data.members
+    let newStart = data.start
+
+    if(newStart){
+      Object.keys(newStart).forEach(key => {
+        newStart[key] = moment(newStart[key])
+      })
+      delete data.start
+    }
     return {
       title: '排期计划',
-      members: toContentState('@Sinclair'),
+      members: toContentState(members || '@Sinclair'),
       mission: {
         Sinclair: [this.initMission()],
       },
-      start: {
+      start: newStart || {
         Sinclair: moment().set('hour', 8),
       },
       unit: 0.2,
       noSatDay: true,
       noSunDay: true,
-      allMembers: this.allMembers.join('，'),
+      allMembers,
       visible: false,
       docShow: true,
+      historyArchive,
+      activeArchive:'',
+      ...data,
     }
   }
   // 合计时间
@@ -223,16 +239,51 @@ class Plan extends React.Component {
       start: { ...start }
     })
   }
+  onSave = () => {
+    let { historyArchive, title, members, start, mission, unit, noSatDay, noSunDay } = this.state
+    if (!historyArchive.find(v => v === title)) {
+      historyArchive.push(title)
+    }
+    let newStart = {}
+    Object.entries(start).forEach(([key, value]) => newStart[key] = value.format('YYYY-MM-DD HH'))
+    store.set(title, JSON.stringify({
+      title, members: Mention.toString(members), start: newStart, mission, unit, noSatDay, noSunDay
+    }))
+    store.set('historyArchive', JSON.stringify(historyArchive))
+    this.setState({
+      historyArchive: [...historyArchive]
+    })
+  }
+  onLoadArchive = (key) => {
+    let data = store.get(key)
+    data = data ? JSON.parse(data) : {}
+    let state = this.initState(data)
+    state.activeArchive = key
+    this.setState(state)
+  }
+  cancelArchive = (key) => e => {
+    e && e.stopPropagation()
+    store.remove(key)
+    let { historyArchive} = this.state
+    let index = historyArchive.findIndex(v => v === key)
+    if(index > -1){
+      historyArchive.splice(index, 1)
+    }
+    store.set(historyArchive, JSON.stringify(historyArchive))
+    this.setState({
+      historyArchive: [...historyArchive]
+    })
+  }
   // 渲染表单
   renderForm = () => {
     const disabledHours = [1, 2, 3, 4, 5, 6, 7, 19, 20, 21, 22, 23, 23, 24, 0]
     const members = Mention.getMentions(this.state.members).map(v => v.replace('@', ''))
-    const { title, unit, start, noSatDay, noSunDay, docShow } = this.state
+    const { title, unit, start, noSatDay, noSunDay, docShow, allMembers, historyArchive } = this.state
     return (
       <Flex dir="column" align="stretch">
         <Flex dir="column" align="stretch" style={{ height: 'calc(100% - 50px)' }} className="plan-form">
           <Divider><h1><a href="https://github.com/Sinclair8023/work-plan">排期表单</a></h1></Divider>
-          <h3>说明：<Button onClick={() => this.setState({ docShow: !docShow })} icon="double-right" style={{ transform: `rotate(${docShow ? -90 : 90}deg)` }} /></h3>
+          <h3>说明（点击右侧图标可以折叠）：<Button onClick={() => this.setState({ docShow: !docShow })} icon="double-right" style={{ transform: `rotate(${docShow ? -90 : 90}deg)` }} /></h3>
           <ul>
             <li>排期成员：输入’@+姓名‘增加成员,输入空格结束。输入’@‘会有提示，提示信息可以通过维护所有成员维护</li>
             {
@@ -244,20 +295,30 @@ class Plan extends React.Component {
                   <li>开始时间：开始时间不能选择当前之前的时间，最小精确到时，选择范围为每天的8：00-18：00（10个小时对应最小排期刻度0.1）</li>
                   <li>排期任务：每个排期任务需要输入具体任务描述，选择好任务所需时间。</li>
                   <li>复制表格 ：点击复制表格可以复制表格到剪贴板。</li>
+                  <li>存档 ：可以保存当前的排期设置，点击历史存档可以切换/删除，会覆盖之前同名的排期。</li>
                   <li>维护所有成员：点击维护成员枚举，方便快速添加排期成员（维护之后长期有效）。</li>
+                  <li>关于保存数据：所有的持久存储都保存在localstorage中，最大保存5M左右数据。</li>
                 </Fragment>
               ) : <li>......</li>
             }
           </ul>
           <Flex>
+            <label htmlFor="">历史存档</label>
+            <Select style={{width: '100%'}} defaultValue={this.state.activeArchive} onChange={this.onLoadArchive}>
+              {
+                historyArchive.map(label => <Option value={label}>{label} <Button style={{float:'right'}} ghost icon={'close'} onClick={this.cancelArchive(label)} /></Option>)
+              }
+            </Select>
+          </Flex>
+          <Flex>
             <label htmlFor="">排期内容</label>
-            <Input value={this.state.title} onChange={this.onSimpleChange('title')} />
+            <Input value={title} onChange={this.onSimpleChange('title')} />
           </Flex>
           <Flex>
             <label htmlFor="">排期成员</label>
             <Mention
               style={{ width: '100%' }}
-              suggestions={this.allMembers}
+              suggestions={allMembers}
               value={this.state.members}
               onChange={this.onMembersChange}
             />
@@ -333,6 +394,7 @@ class Plan extends React.Component {
         <Flex style={{ height: 50 }} justify="center">
           <Button.Group>
             <Button icon="copy" type="primary" onClick={() => this.onCopy()}>复制表格</Button>
+            <Button icon="copy" type="primary" onClick={() => this.onSave()}>存档</Button>
             <Button icon="edit" type="primary" onClick={() => this.onSimpleChange('visible')('true')}>维护所有成员</Button>
           </Button.Group>
         </Flex>
