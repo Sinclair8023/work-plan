@@ -11,7 +11,6 @@ import Flex from './components/Flex'
 import { store } from './utils'
 import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider, Select  } from 'antd'
 const RadioGroup = Radio.Group
-const InputGroup = Input.Group
 const TextArea = Input.TextArea
 const TabPane = Tabs.TabPane;
 const ButtonGroup = Button.Group
@@ -111,10 +110,9 @@ class Plan extends React.Component {
     )
   }
   renderTable() {
-    const { title, person, mission, start, unit } = this.state
+    const { title, mission, unit } = this.state
     let { sumDays, startTime, sumTimes } = this.getTime()
     let timeTd = new Array(sumDays).fill(1)
-    let index = 0
     this.missionLength = 1
     return (
       <table ref={ref => this.table = ref}>
@@ -392,11 +390,11 @@ class Plan extends React.Component {
           </Tabs>
         </Flex>
         <Flex style={{ height: 50 }} justify="center">
-          <Button.Group>
+          <ButtonGroup>
             <Button icon="copy" type="primary" onClick={() => this.onCopy()}>复制表格</Button>
             <Button icon="copy" type="primary" onClick={() => this.onSave()}>存档</Button>
             <Button icon="edit" type="primary" onClick={() => this.onSimpleChange('visible')('true')}>维护所有成员</Button>
-          </Button.Group>
+          </ButtonGroup>
         </Flex>
       </Flex>
     )
