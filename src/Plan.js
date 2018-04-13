@@ -1,15 +1,9 @@
-/**
- * title  标题
- * person 负责人
- * mission 任务 {desc,time,person}
- * start
- */
 import React, { Fragment } from 'react'
 import moment from 'moment'
 import ReactEcharts from 'echarts-for-react'
 import Flex from './components/Flex'
 import { store } from './utils'
-import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider, Select  } from 'antd'
+import { DatePicker, InputNumber, Radio, Input, Button, Mention, Tabs, Switch, Modal, Divider, Select, message  } from 'antd'
 const RadioGroup = Radio.Group
 const TextArea = Input.TextArea
 const TabPane = Tabs.TabPane;
@@ -71,7 +65,7 @@ class Plan extends React.Component {
     let timeArr = Object.entries(mission).map(([p, ms]) => start[p].clone().add(ms.reduce((a, b) => a + b.time, 0), 'days'))
     let endTime = moment.max(timeArr)
     let sumDays = Math.ceil((endTime - startTime) / 1000 / 3600 / 24) + 1
-    let sumTimes = Object.entries(mission).map(([p, ms]) => ms.reduce((a, b) => a + b.time, 0)).reduce((a,b) => a+b, 0)
+    let sumTimes = +Object.entries(mission).map(([p, ms]) => ms.reduce((a, b) => a + b.time, 0)).reduce((a,b) => a+b, 0).toFixed(1)
     return {
       sumDays,
       startTime,
@@ -250,6 +244,8 @@ class Plan extends React.Component {
     store.set('historyArchive', JSON.stringify(historyArchive))
     this.setState({
       historyArchive: [...historyArchive]
+    },() => {
+      message.success('存档成功！')
     })
   }
   onLoadArchive = (key) => {
@@ -257,7 +253,9 @@ class Plan extends React.Component {
     data = data ? JSON.parse(data) : {}
     let state = this.initState(data)
     state.activeArchive = key
-    this.setState(state)
+    this.setState(state, () => {
+      message.success('加载存档成功！')
+    })
   }
   cancelArchive = (key) => e => {
     e && e.stopPropagation()
@@ -270,6 +268,8 @@ class Plan extends React.Component {
     store.set(historyArchive, JSON.stringify(historyArchive))
     this.setState({
       historyArchive: [...historyArchive]
+    }, () => {
+      message.success('删除存档成功！')
     })
   }
   // 渲染表单
@@ -287,6 +287,7 @@ class Plan extends React.Component {
             {
               docShow ? (
                 <Fragment>
+                  <li>关于本项目：<a href="https://github.com/Sinclair8023/work-plan">点击链接跳转到github项目地址。</a></li>
                   <li>排期刻度：以’工作日‘为单位，最小0.1工作日，最大1工作日</li>
                   <li>过滤周六：开启后，排期时间自动跨过周六</li>
                   <li>过滤周日：开启后，排期时间自动跨过周日</li>
@@ -391,9 +392,9 @@ class Plan extends React.Component {
         </Flex>
         <Flex style={{ height: 50 }} justify="center">
           <ButtonGroup>
+            <Button icon="edit" type="primary" onClick={() => this.onSimpleChange('visible')('true')}>维护所有成员</Button>
             <Button icon="copy" type="primary" onClick={() => this.onCopy()}>复制表格</Button>
             <Button icon="copy" type="primary" onClick={() => this.onSave()}>存档</Button>
-            <Button icon="edit" type="primary" onClick={() => this.onSimpleChange('visible')('true')}>维护所有成员</Button>
           </ButtonGroup>
         </Flex>
       </Flex>
@@ -422,6 +423,7 @@ class Plan extends React.Component {
       range.select();
       range.execCommand('Copy');
     }
+    message.success('排期表格已成功复制到剪贴板！')
   }
   // echarts option
   getOption = () => {
@@ -469,14 +471,16 @@ class Plan extends React.Component {
     };
   }
   onSaveAllMembers = () => {
-    let allMembers = this.state.allMembers
+    let allMembers = this.allMembersTextArea.textAreaRef.value
     let members = allMembers.replace(/,|，| /g, ',').split(',')
     if (members.length) {
       store.set('members', members)
     }
     this.setState({
-      allMembers: members.join('，'),
+      allMembers: members,
       visible: false,
+    }, () => {
+      message.success('全部成员已跟新！')
     })
   }
   render() {
@@ -484,13 +488,14 @@ class Plan extends React.Component {
       <div className="planBox">
         <Modal title="维护所有成员"
           visible={this.state.visible}
-          onOk={this.onSaveAllMembers}
+          onOk={() => this.onSaveAllMembers()}
           onCancel={() => this.onSimpleChange('visible')(false)}
         >
           <h3>说明：各个成员间以中英文逗号或者空格隔开。</h3>
-          <TextArea row={4}
-            value={this.state.allMembers}
-            onChange={this.onSimpleChange('allMembers')}
+          <TextArea
+            ref={ref => this.allMembersTextArea = ref} 
+            row={4}
+            defaultValue={this.state.allMembers.join('，')}
           />
         </Modal>
         {
