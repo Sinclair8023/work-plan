@@ -3,9 +3,40 @@
   "name": "排期小工具",
   "icons": [
     {
-      "src": "./favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16 144*144",
-      "type": "image/x-icon"
+      "src": "./static/images/Blog.png",
+      "sizes": "36x36",
+      "type": "image/png",
+      "density": "0.75"
+    },
+    {
+      "src": "./static/images/Blog (1).png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "density": "1.0"
+    },
+    {
+      "src": "./static/images/Blog (2).png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "density": "1.5"
+    },
+    {
+      "src": "./static/images/Blog (3).png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "density": "2.0"
+    },
+    {
+      "src": "./static/images/Blog (4).png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "density": "3.0"
+    },
+    {
+      "src": "./static/images/Blog (5).png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "density": "4.0"
     }
   ],
   "start_url": "./index.html",
